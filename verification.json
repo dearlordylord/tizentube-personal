@@ -1,0 +1,22 @@
+{
+  "checked_at": "2026-10-24T20:29:36.158743+00:00",
+  "model": "Samsung QN55LS03BAFXZC",
+  "app": {
+    "id": "xvvl3S1TT1.TizenTubeStandalone",
+    "name": "TizenTube Personal",
+    "version": "2.1.2",
+    "running": true,
+    "visible": true
+  },
+  "script": {
+    "version": "1.15.2-personal.1",
+    "loaded": true,
+    "sha256": "7a092351e0e348507ef9c97da8833d5f6717de628517f5299053b3c2073f1d69",
+    "source": "https://dearlordylord.github.io/tizentube-personal/cdn/userScript-1.15.2-7a092351e0e3.js"
+  },
+  "tv_served_script_hash_verified": true,
+  "proxy_lan_accessible": false,
+  "loader_tests": "passed",
+  "package_tests": "passed",
+  "limit": "Playback/audio and ad insertion for an individual video were not independently verified in this change."
+}
