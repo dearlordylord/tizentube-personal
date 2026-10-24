@@ -1,0 +1,6 @@
+.cache/
+dist/
+__pycache__/
+*.p12
+*.pfx
+*password*

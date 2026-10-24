@@ -1,0 +1,94 @@
+--- upstream/service/index.js
++++ personal/service/index.js
+@@ -5,6 +5,7 @@
+ const express = require('express');
+ const app = express();
+ const PORT = 8100;
++var personalScript = require('./personal-script.js');
+ const fetch = require('node-fetch');
+ const cobaltSetup = require('./utils/cobaltSetup.js');
+ const startServer = require('./utils/cobaltProxyServer.js');
+@@ -42,6 +43,8 @@
+     }, 50);
+ });
+ 
++app.get(personalScript.path, personalScript.serve);
++app.get('/tizentube-personal/status', personalScript.status);
+ app.all('*', (req, res) => {
+     const isCorsBypass = req.path.indexOf('/cors-bypass/') === 0;
+ 
+@@ -140,7 +143,7 @@
+                 return response.text().then((text) => {
+                     if (req.url.indexOf('/tv') === 0 && req.url.indexOf('/tv_config') === -1) {
+                         // Insert the userscript for TizenTube
+-                        text += `<script src="https://cdn.jsdelivr.net/npm/@foxreis/tizentube/dist/userScript.js?ver=${Date.now()}"></script>`;
++                        text += `<script src="/tizentube-personal/script-7a092351e0e3.js"></script>`;
+                     }
+ 
+                     const proxyPrefix = `http://localhost:${PORT}/cors-bypass/`;
+--- upstream/service/utils/cobaltProxyServer.js
++++ personal/service/utils/cobaltProxyServer.js
+@@ -10,6 +10,7 @@
+ const url = require('url');
+ 
+ const proxyPort = 8101;
++var personalScript = require('../personal-script.js');
+ 
+ function startServer() {
+     const caCertificate = forge.pki.certificateFromPem(
+@@ -95,7 +96,8 @@
+         tlsServer.on('secureConnection', clientTlsSocket => {
+             const httpServer = http.createServer(
+                 (request, response) => {
+-                    const isTvPath =
++                    if (request.url === personalScript.path) { personalScript.serve(request, response); return; }
++        const isTvPath =
+                         request.url === '/tv' ||
+                         request.url.startsWith('/tv?');
+ 
+@@ -155,18 +157,19 @@
+                                 ''
+                             );
+ 
+-                            body = body.replace('</body>', `<script src="https://cdn.jsdelivr.net/npm/@foxreis/tizentube/dist/userScript.js?ver=${Date.now()}"></script></body>`);
++                            body = body.replace('</body>', `<script src="/tizentube-personal/script-7a092351e0e3.js"></script></body>`);
+ 
+                             headers['content-length'] = Buffer.byteLength(body, 'utf8');
+                             headers['connection'] = 'close';
+                             headers['content-encoding'] = 'identity';
+ 
+-                            response.writeHead(
+-                                targetResponse.statusCode,
+-                                headers
+-                            );
+-
+-                            response.end(body);
++                            personalScript.load().then(function () {
++                response.writeHead(targetResponse.statusCode, headers);
++                response.end(body);
++            }, function () {
++                response.writeHead(503, { 'Content-Type': 'text/plain', 'Cache-Control': 'no-store' });
++                response.end('Verified personal TizenTube script unavailable');
++            });
+                         });
+                     });
+ 
+@@ -236,7 +239,7 @@
+         );
+     });
+ 
+-    proxyServer.listen(proxyPort, '0.0.0.0');
++    proxyServer.listen(proxyPort, '127.0.0.2');
+ }
+ 
+ module.exports = startServer;--- upstream/service/utils/injector.js
++++ personal/service/utils/injector.js
+@@ -16,7 +16,7 @@
+             client.Page.enable();
+ 
+             client.on('Runtime.executionContextCreated', m => {
+-                fetch('https://cdn.jsdelivr.net/npm/@foxreis/tizentube/dist/userScript.js').then(res => res.text()).then(modFile => {
++                fetch('http://127.0.0.1:8100/tizentube-personal/script-7a092351e0e3.js').then(res => res.text()).then(modFile => {
+                     client.Runtime.evaluate({ expression: modFile, contextId: m.context.id });
+                 }).catch(e => {
+                     client.Runtime.evaluate({ expression: 'alert("Failed to request to JSDelivr CDN.")', contextId: m.context.id });

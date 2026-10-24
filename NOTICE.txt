@@ -1,0 +1,5 @@
+TizenTube Personal, modified 2026-10-24.
+Based on reisxd/TizenTube v2.1.1 and @foxreis/tizentube 1.15.2, GPL-3.0-only.
+Copyright of upstream code remains with its respective authors.
+Changes: own fixed CDN script with SHA-256 verification, loopback-only proxy.
+Source and build instructions: https://github.com/dearlordylord/tizentube-personal
